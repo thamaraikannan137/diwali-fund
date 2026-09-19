@@ -108,6 +108,10 @@ export async function updateMemberApi(id: string, input: { name: string; phone: 
   return pickMember(data);
 }
 
+export async function deleteMemberApi(id: string) {
+  await api.delete(`/members/${id}`);
+}
+
 export async function addMembershipsBulkApi(
   schemeId: string,
   items: { memberId: string; units: number }[],

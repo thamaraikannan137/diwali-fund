@@ -3,6 +3,7 @@ import { Member } from '../models/Member';
 import { Scheme } from '../models/Scheme';
 import { Membership } from '../models/Membership';
 import { Payment } from '../models/Payment';
+import { logger } from '../utils/logger';
 
 const router = Router();
 
@@ -15,6 +16,12 @@ router.get('/', async (_req, res, next) => {
       Membership.findAll({ order: [['createdAt', 'ASC']] }),
       Payment.findAll({ order: [['date', 'DESC']] }),
     ]);
+    logger.info('Bootstrap snapshot', {
+      members: members.length,
+      schemes: schemes.length,
+      memberships: ms.length,
+      payments: payments.length,
+    });
     res.json({ members, schemes, ms, payments });
   } catch (e) {
     next(e);

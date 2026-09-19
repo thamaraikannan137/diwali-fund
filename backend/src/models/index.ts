@@ -1,5 +1,6 @@
 import { Sequelize } from 'sequelize';
 import { env } from '../config/env';
+import { logger } from '../utils/logger';
 import { initUser, User } from './User';
 import { initMember, Member } from './Member';
 import { initScheme, Scheme } from './Scheme';
@@ -11,7 +12,10 @@ const isLocalDb =
 
 export const sequelize = new Sequelize(env.databaseUrl, {
   dialect: 'postgres',
-  logging: env.nodeEnv === 'development' ? console.log : false,
+  logging:
+    env.nodeEnv === 'development'
+      ? (sql: string) => logger.debug('SQL', { sql })
+      : false,
   dialectOptions: isLocalDb
     ? {}
     : {

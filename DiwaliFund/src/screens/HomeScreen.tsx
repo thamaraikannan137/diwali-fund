@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFund } from '../context/FundContext';
@@ -22,7 +22,7 @@ const QUICK = [
 
 export function HomeScreen() {
   const insets = useSafeAreaInsets();
-  const { rows, payments, goTab, logout, openSummary } = useFund();
+  const { rows, payments, goTab, logout, openSummary, refresh, refreshing } = useFund();
 
   const recent = useMemo(
     () =>
@@ -56,6 +56,16 @@ export function HomeScreen() {
           gap: 20,
         }}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => {
+              void refresh();
+            }}
+            tintColor={colors.blue}
+            colors={[colors.blue]}
+          />
+        }
       >
         <View className="flex-row items-center justify-between">
           <View>

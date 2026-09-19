@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { Member } from '../models/Member';
+import { Membership } from '../models/Membership';
+import { Payment } from '../models/Payment';
 import { HttpError } from '../middleware/error';
 
 const router = Router();
@@ -68,6 +70,13 @@ router.delete('/:id', async (req, res, next) => {
   try {
     const member = await Member.findByPk(req.params.id);
     if (!member) throw new HttpError(404, 'Member not found');
+
+    const memberships = await Membership.findAll({ where: { memberId: member.id } });
+    const msIds = memberships.map((m) => m.id);
+    if (msIds.length) {
+      await Payment.destroy({ where: { msId: msIds } });
+      await Membership.destroy({ where: { id: msIds } });
+    }
     await member.destroy();
     res.json({ ok: true });
   } catch (e) {

@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFund } from '../context/FundContext';
 import { Avatar, EmptyState, Screen } from '../components/ui';
 import { colors } from '../theme/colors';
-import { initials, inr, memberStatus, schemeStats } from '../utils/fund';
+import { initials, inr, memberStatus, monthsBetween, schemeStats } from '../utils/fund';
 
 export function SchemeDetailScreen() {
   const insets = useSafeAreaInsets();
@@ -110,6 +110,7 @@ export function SchemeDetailScreen() {
                     amount: String(Math.round(scheme.unit)),
                     start: scheme.start,
                     end: scheme.end,
+                    months: String(monthsBetween(scheme.start, scheme.end)),
                   },
                 });
               }}

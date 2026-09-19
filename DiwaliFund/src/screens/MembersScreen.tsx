@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFund } from '../context/FundContext';
@@ -18,6 +18,8 @@ export function MembersScreen() {
     setMFilter,
     openMember,
     openSheet,
+    refresh,
+    refreshing,
   } = useFund();
 
   const perMember = useMemo(
@@ -93,6 +95,16 @@ export function MembersScreen() {
         }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => {
+              void refresh();
+            }}
+            tintColor={colors.blue}
+            colors={[colors.blue]}
+          />
+        }
       >
         <View className="flex-row items-center justify-between">
           <View>

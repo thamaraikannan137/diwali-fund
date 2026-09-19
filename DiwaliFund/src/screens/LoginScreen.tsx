@@ -81,6 +81,11 @@ export function LoginScreen() {
           disabled={authBusy}
           className="mt-1"
         />
+        {authBusy ? (
+          <Text className="text-center text-[12px] text-muted">
+            First login can take 1–3 minutes while the free server wakes up.
+          </Text>
+        ) : null}
       </View>
 
       <Text className="text-center text-[13px] text-faint">

@@ -68,6 +68,8 @@ export type CreateForm = {
   amount: string;
   start: string;
   end: string;
+  /** Duration in calendar months (UI helper; end is derived when this changes). */
+  months: string;
 };
 
 export type PayForm = {

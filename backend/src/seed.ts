@@ -5,6 +5,7 @@ import { Member } from './models/Member';
 import { Scheme } from './models/Scheme';
 import { Membership } from './models/Membership';
 import { Payment } from './models/Payment';
+import { logger } from './utils/logger';
 
 function periods(s: { type: string; start: string; end: string }, now = new Date()) {
   const st = new Date(s.start);
@@ -173,14 +174,17 @@ async function seed() {
   await Membership.bulkCreate(memberships);
   await Payment.bulkCreate(payments);
 
-  console.log('Seed complete');
-  console.log('Login: phone 9876543210 / password diwali123');
-  console.log(`Members: ${members.length}, Schemes: ${schemes.length}`);
-  console.log(`Memberships: ${memberships.length}, Payments: ${payments.length}`);
+  logger.info('Seed complete', {
+    members: members.length,
+    schemes: schemes.length,
+    memberships: memberships.length,
+    payments: payments.length,
+  });
+  logger.info('Login: phone 9876543210 / password diwali123');
   await sequelize.close();
 }
 
 seed().catch((err) => {
-  console.error(err);
+  logger.error('Seed failed', err);
   process.exit(1);
 });

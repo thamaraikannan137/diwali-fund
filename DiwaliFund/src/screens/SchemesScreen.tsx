@@ -1,16 +1,17 @@
 import React, { useMemo } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFund } from '../context/FundContext';
 import { ProgressRing } from '../components/ProgressRing';
 import { Screen, Segmented } from '../components/ui';
 import { colors } from '../theme/colors';
-import { schemeStats } from '../utils/fund';
+import { addMonthsISO, schemeStats, todayISO } from '../utils/fund';
 
 export function SchemesScreen() {
   const insets = useSafeAreaInsets();
-  const { schemes, rows, filter, setFilter, openScheme, openSheet } = useFund();
+  const { schemes, rows, filter, setFilter, openScheme, openSheet, refresh, refreshing } =
+    useFund();
 
   const cards = useMemo(
     () =>
@@ -31,23 +32,36 @@ export function SchemesScreen() {
         }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => {
+              void refresh();
+            }}
+            tintColor={colors.blue}
+            colors={[colors.blue]}
+          />
+        }
       >
         <View className="flex-row items-center justify-between">
           <Text className="text-[26px] font-bold tracking-tight text-ink">Schemes</Text>
           <Pressable
             className="h-[42px] w-[42px] items-center justify-center rounded-md bg-brand"
-            onPress={() =>
+            onPress={() => {
+              const start = todayISO();
+              const months = 10;
               openSheet('create', {
                 form: {
                   id: undefined,
                   name: '',
                   type: 'WEEKLY',
                   amount: '',
-                  start: '2026-01-05',
-                  end: '2026-11-08',
+                  start,
+                  months: String(months),
+                  end: addMonthsISO(start, months),
                 },
-              })
-            }
+              });
+            }}
           >
             <Ionicons name="add" size={22} color={colors.white} />
           </Pressable>

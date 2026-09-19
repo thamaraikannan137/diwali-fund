@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFund } from '../context/FundContext';
@@ -9,7 +9,7 @@ import { initials, inr, todayISO } from '../utils/fund';
 
 export function CollectScreen() {
   const insets = useSafeAreaInsets();
-  const { schemes, rows, openSheet, openMembership } = useFund();
+  const { schemes, rows, openSheet, openMembership, refresh, refreshing } = useFund();
   const [search, setSearch] = React.useState('');
   const [schemeFilter, setSchemeFilter] = React.useState<string>('ALL');
 
@@ -64,6 +64,16 @@ export function CollectScreen() {
         }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => {
+              void refresh();
+            }}
+            tintColor={colors.blue}
+            colors={[colors.blue]}
+          />
+        }
       >
         <View>
           <Text className="text-[26px] font-bold tracking-tight text-ink">Collect</Text>

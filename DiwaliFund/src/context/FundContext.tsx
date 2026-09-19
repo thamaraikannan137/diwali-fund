@@ -19,13 +19,14 @@ import type {
   SchemeType,
   SheetKind,
 } from '../types';
-import { computeRows, inr, methodLabel, todayISO } from '../utils/fund';
+import { addMonthsISO, computeRows, inr, methodLabel, todayISO } from '../utils/fund';
 import { apiErrorMessage, getToken } from '../api/client';
 import {
   addMembershipsBulkApi,
   createMemberApi,
   createPaymentApi,
   createSchemeApi,
+  deleteMemberApi,
   deletePaymentApi,
   deleteSchemeApi,
   fetchBootstrap,
@@ -76,6 +77,8 @@ type FundContextValue = FundState & {
   rows: ReturnType<typeof computeRows>;
   login: (phone: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  refresh: () => Promise<void>;
+  refreshing: boolean;
   goTab: (tab: TabKey) => void;
   setFilter: (f: FundState['filter']) => void;
   setMFilter: (f: FundState['mFilter']) => void;
@@ -100,6 +103,7 @@ type FundContextValue = FundState & {
   toggleCal: () => void;
   createScheme: () => void;
   deleteScheme: () => void;
+  deleteMember: (id?: string) => Promise<void>;
   addToScheme: () => void;
   savePayment: () => void;
   deletePayment: () => void;
@@ -112,13 +116,18 @@ type FundContextValue = FundState & {
 
 const FundContext = createContext<FundContextValue | null>(null);
 
-const defaultForm = (): CreateForm => ({
-  name: '',
-  type: 'WEEKLY',
-  amount: '',
-  start: '2026-01-05',
-  end: '2026-11-08',
-});
+const defaultForm = (): CreateForm => {
+  const start = todayISO();
+  const months = 10;
+  return {
+    name: '',
+    type: 'WEEKLY',
+    amount: '',
+    start,
+    months: String(months),
+    end: addMonthsISO(start, months),
+  };
+};
 
 const defaultPay = (): PayForm => ({
   amount: '',
@@ -190,6 +199,20 @@ export function FundProvider({ children }: { children: React.ReactNode }) {
     },
     [patch],
   );
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  const refresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      const data = await fetchBootstrap();
+      patch({ ...data });
+    } catch (err) {
+      showToast(apiErrorMessage(err, 'Could not refresh'));
+    } finally {
+      setRefreshing(false);
+    }
+  }, [patch, showToast]);
 
   useEffect(() => {
     let cancelled = false;
@@ -267,6 +290,8 @@ export function FundProvider({ children }: { children: React.ReactNode }) {
     rows,
     login,
     logout,
+    refresh,
+    refreshing,
     goTab: (tab) =>
       patch({
         tab,
@@ -372,6 +397,30 @@ export function FundProvider({ children }: { children: React.ReactNode }) {
           showToast(apiErrorMessage(err, 'Could not delete scheme'));
         }
       })();
+    },
+    deleteMember: async (idArg) => {
+      try {
+        const id = idArg || state.memberId;
+        if (!id) {
+          showToast('No member selected');
+          return;
+        }
+        const msIds = new Set(state.ms.filter((m) => m.memberId === id).map((m) => m.id));
+        await deleteMemberApi(id);
+        patch({
+          members: state.members.filter((m) => m.id !== id),
+          ms: state.ms.filter((m) => m.memberId !== id),
+          payments: state.payments.filter((p) => !msIds.has(p.msId)),
+          memberId: null,
+          membershipOpen: false,
+          msId: null,
+          sheet: null,
+        });
+        showToast('Member deleted');
+      } catch (err) {
+        showToast(apiErrorMessage(err, 'Could not delete member'));
+        throw err;
+      }
     },
     addToScheme: () => {
       void (async () => {

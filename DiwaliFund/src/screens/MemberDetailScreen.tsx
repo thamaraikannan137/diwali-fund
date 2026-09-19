@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFund } from '../context/FundContext';
@@ -25,6 +25,7 @@ export function MemberDetailScreen() {
     openSheet,
     openMembership,
     openEditPayment,
+    deleteMember,
   } = useFund();
 
   const member = members.find((m) => m.id === memberId);
@@ -55,6 +56,24 @@ export function MemberDetailScreen() {
         }),
     [payments, rs],
   );
+
+  const confirmDelete = () => {
+    if (!member) return;
+    Alert.alert(
+      'Delete member?',
+      `Delete “${member.name}” and remove them from all schemes (including payments)? This cannot be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            void deleteMember(member.id);
+          },
+        },
+      ],
+    );
+  };
 
   if (!member) return null;
 
@@ -91,6 +110,14 @@ export function MemberDetailScreen() {
               }
               className="h-9 rounded-sm px-3.5"
             />
+            <Pressable
+              className="h-10 w-10 items-center justify-center rounded-[13px] bg-danger-soft"
+              onPress={confirmDelete}
+              accessibilityRole="button"
+              accessibilityLabel="Delete member"
+            >
+              <Ionicons name="trash-outline" size={18} color={colors.red} />
+            </Pressable>
           </View>
           <View className="mt-[18px] flex-row gap-3">
             <View className="flex-1 rounded-xl bg-bg px-4 py-3.5">

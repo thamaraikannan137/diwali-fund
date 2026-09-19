@@ -86,7 +86,31 @@ export function greeting(now = new Date()): string {
 }
 
 export function todayISO(now = new Date()): string {
-  return now.toISOString().slice(0, 10);
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+/** Calendar months from start → end (0 if end is before start). */
+export function monthsBetween(startISO: string, endISO: string): number {
+  if (!startISO || !endISO) return 0;
+  const s = parseLocalDate(startISO);
+  const e = parseLocalDate(endISO);
+  let months = (e.getFullYear() - s.getFullYear()) * 12 + (e.getMonth() - s.getMonth());
+  if (e.getDate() < s.getDate()) months -= 1;
+  return Math.max(0, months);
+}
+
+/** Add calendar months to a start date (keeps day-of-month when possible). */
+export function addMonthsISO(startISO: string, months: number): string {
+  const d = parseLocalDate(startISO || todayISO());
+  const day = d.getDate();
+  d.setDate(1);
+  d.setMonth(d.getMonth() + months);
+  const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+  d.setDate(Math.min(day, lastDay));
+  return todayISO(d);
 }
 
 export function computeRows(
